@@ -1,0 +1,48 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.11'
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
+}
+
+group 'org.liamjd.bascule'
+version '0.0.1'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    jcenter()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    // bascule library
+	implementation group: 'org.liamjd.bascule-lib', name: 'bascule-lib', version: '0.0.11'
+
+    // pdf generation
+    compile group: 'org.apache.xmlgraphics', name: 'fop', version: '2.3'
+
+    // testing - junit
+    testCompile("org.junit.jupiter:junit-jupiter-api:5.3.2")
+    testCompile("org.junit.jupiter:junit-jupiter-params:5.3.2")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.3.2")
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+// configure shadowJar
+shadowJar {
+    baseName = 'bascule-extras'
+    classifier = null
+}
+// don't include the kotlin runtime in the jar
+configurations {
+    runtime.exclude module: 'kotlin-stdlib-jdk8'
+    runtime.exclude module: 'bascule-lib'
+}
