@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'org.liamjd.bascule'
-version '0.0.1'
+version '0.0.2'
 
 sourceCompatibility = 1.8
 
@@ -18,7 +18,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     // bascule library
-	implementation group: 'org.liamjd.bascule-lib', name: 'bascule-lib', version: '0.0.11'
+	implementation group: 'org.liamjd.bascule-lib', name: 'bascule-lib', version: '0.0.12'
 
     // pdf generation
     compile group: 'org.apache.xmlgraphics', name: 'fop', version: '2.3'
