@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'org.liamjd.bascule'
-version '0.0.2'
+version '0.0.3'
 
 sourceCompatibility = 1.8
 
@@ -23,10 +23,19 @@ dependencies {
     // pdf generation
     compile group: 'org.apache.xmlgraphics', name: 'fop', version: '2.3'
 
+    // jsoup HTML parser library @ https://jsoup.org/
+    compile 'org.jsoup:jsoup:1.11.3'
+
     // testing - junit
     testCompile("org.junit.jupiter:junit-jupiter-api:5.3.2")
     testCompile("org.junit.jupiter:junit-jupiter-params:5.3.2")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:5.3.2")
+
+    // test - mocking
+    testImplementation "io.mockk:mockk:1.8.13.kotlin13"
+
+    // testing - coroutines
+    testCompile(group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.0.1')
 }
 
 compileKotlin {
