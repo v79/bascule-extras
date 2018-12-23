@@ -49,8 +49,7 @@ class SitemapXMLGenerator(val posts: List<Post>) : GeneratorPipeline {
         val locBuilder = StringBuilder()
         locBuilder.append("\t\t<loc>")
         locBuilder.append(host)
-        locBuilder.append(post.slug.trim())
-        locBuilder.append(".html")
+        locBuilder.append(post.url.trim())
         locBuilder.appendln("</loc>")
         return locBuilder.toString()
     }

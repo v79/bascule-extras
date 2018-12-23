@@ -61,7 +61,7 @@ class LunrJSIndexGenerator(val posts: List<Post>) : GeneratorPipeline {
         val sb = StringBuilder()
         val postDoc = post.extractDocument()
         sb.appendln("{")
-        sb.appendln("\t\"id\": \"${post.slug}\",")
+        sb.appendln("\t\"id\": \"${post.url}\",")
         sb.appendln("\t\"title\": \"${post.title}\",")
         sb.appendln("\t\"date\": \"${formatDate(postDoc.postDate)}\",")
         sb.appendln("\t\"body\": \"${postDoc.body}\",")
