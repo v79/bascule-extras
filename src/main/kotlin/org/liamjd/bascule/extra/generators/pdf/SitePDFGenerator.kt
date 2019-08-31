@@ -6,7 +6,7 @@ import org.liamjd.bascule.lib.FileHandler
 import org.liamjd.bascule.lib.generators.GeneratorPipeline
 import org.liamjd.bascule.lib.model.Post
 import org.liamjd.bascule.lib.model.Project
-import org.liamjd.bascule.lib.render.Renderer
+import org.liamjd.bascule.lib.render.TemplatePageRenderer
 import java.io.FileOutputStream
 import java.net.URL
 import javax.xml.transform.TransformerFactory
@@ -21,7 +21,7 @@ class SitePDFGenerator(val posts: List<Post>) : GeneratorPipeline {
 
     val fopFactory = FopFactory.newInstance(readFileFromResources("/", "fopConf.xconf").toURI())
 
-    override suspend fun process(project: Project, renderer: Renderer, fileHandler: FileHandler) {
+    override suspend fun process(project: Project, renderer: TemplatePageRenderer, fileHandler: FileHandler) {
 
         val pdfFolder = fileHandler.createDirectory(project.dirs.output.absolutePath, FOLDER_NAME)
 

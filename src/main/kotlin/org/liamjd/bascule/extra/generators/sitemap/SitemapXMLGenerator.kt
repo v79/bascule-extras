@@ -4,7 +4,7 @@ import org.liamjd.bascule.lib.FileHandler
 import org.liamjd.bascule.lib.generators.GeneratorPipeline
 import org.liamjd.bascule.lib.model.Post
 import org.liamjd.bascule.lib.model.Project
-import org.liamjd.bascule.lib.render.Renderer
+import org.liamjd.bascule.lib.render.TemplatePageRenderer
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -12,7 +12,7 @@ class SitemapXMLGenerator(val posts: List<Post>) : GeneratorPipeline {
     override val TEMPLATE: String
         get() = ""
 
-    override suspend fun process(project: Project, renderer: Renderer, fileHandler: FileHandler) {
+    override suspend fun process(project: Project, renderer: TemplatePageRenderer, fileHandler: FileHandler) {
 
         val outputFilename = "sitemap.xml"
         val model = mutableMapOf<String, Any>()

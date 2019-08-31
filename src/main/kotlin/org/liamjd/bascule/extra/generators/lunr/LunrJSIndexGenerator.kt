@@ -5,7 +5,7 @@ import org.liamjd.bascule.lib.FileHandler
 import org.liamjd.bascule.lib.generators.GeneratorPipeline
 import org.liamjd.bascule.lib.model.Post
 import org.liamjd.bascule.lib.model.Project
-import org.liamjd.bascule.lib.render.Renderer
+import org.liamjd.bascule.lib.render.TemplatePageRenderer
 import java.io.File
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
@@ -23,7 +23,7 @@ class LunrJSIndexGenerator(val posts: List<Post>) : GeneratorPipeline {
     override val TEMPLATE: String
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
-    override suspend fun process(project: Project, renderer: Renderer, fileHandler: FileHandler) {
+    override suspend fun process(project: Project, renderer: TemplatePageRenderer, fileHandler: FileHandler) {
         val outputFilename = project.dirs.output.absolutePath + "/lunrindex.json"
         File(outputFilename).delete()
         val stream = RandomAccessFile(outputFilename, "rw")
@@ -61,7 +61,7 @@ class LunrJSIndexGenerator(val posts: List<Post>) : GeneratorPipeline {
         val sb = StringBuilder()
         val postDoc = post.extractDocument()
         sb.appendln("{")
-        sb.appendln("\t\"id\": \"${post.url}\",")
+        sb.appendln("\t\"id\": \"${post.url.removePrefix('/'.toString())}\",")
         sb.appendln("\t\"title\": \"${post.title}\",")
         sb.appendln("\t\"date\": \"${formatDate(postDoc.postDate)}\",")
         sb.appendln("\t\"body\": \"${postDoc.body}\",")
