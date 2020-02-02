@@ -1,111 +1,97 @@
 package org.liamjd.bascule.extra.generators.lunr
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
+import kotlinx.serialization.list
 import org.jsoup.Jsoup
 import org.liamjd.bascule.lib.FileHandler
 import org.liamjd.bascule.lib.generators.GeneratorPipeline
 import org.liamjd.bascule.lib.model.Post
 import org.liamjd.bascule.lib.model.Project
 import org.liamjd.bascule.lib.render.TemplatePageRenderer
-import java.io.File
-import java.io.RandomAccessFile
-import java.nio.ByteBuffer
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-data class PostDocument(
-    val body: String,
-    val postDate: LocalDate,
-    val headings: List<String>? = null,
-    val codeBlocks: Array<String>? = null
+@Serializable
+data class LunrPost(
+	val id: String,
+	val title: String,
+	@Serializable(with = LocalDateSerializer::class) val date: LocalDate,
+	val body: String,
+	val headings: String? = null,
+	@Transient
+	val codeBlocks: List<String>? = null
 )
 
 class LunrJSIndexGenerator(val posts: List<Post>) : GeneratorPipeline {
-    override val TEMPLATE: String
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+	override val TEMPLATE: String
+		get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
-    override suspend fun process(project: Project, renderer: TemplatePageRenderer, fileHandler: FileHandler) {
-        val outputFilename = project.dirs.output.absolutePath + "/lunrindex.json"
-        File(outputFilename).delete()
-        val stream = RandomAccessFile(outputFilename, "rw")
-        val channel = stream.channel
+	private val LUNR_INDEX_JSON = "/lunrindex.json"
 
-        println("Writing lunrindex.json file for all posts")
-        val start = "[\n".toByteArray()
-        val end = "\n]".toByteArray()
-        val startBuffer: ByteBuffer = ByteBuffer.allocate(start.size)
-        val endBuffer: ByteBuffer = ByteBuffer.allocate(end.size)
-        startBuffer.put(start).flip()
-        endBuffer.put(end).flip()
-        channel.write(startBuffer)
-        posts.forEachIndexed { idx, post ->
-            val json: String
-            if (idx != posts.size - 1) {
-                json = postToJson(post) + ","
-            } else {
-                json = postToJson(post)
-            }
-            val strBytes = json.toByteArray()
-            val buffer = ByteBuffer.allocate(strBytes.size)
-            buffer.put(strBytes)
-            buffer.flip()
-            channel.write(buffer)
-        }
-        channel.write(endBuffer)
-        stream.close()
-        channel.close()
+	@UnstableDefault
+	override suspend fun process(
+		project: Project,
+		renderer: TemplatePageRenderer,
+		fileHandler: FileHandler,
+		clean: Boolean
+	) {
+		val outputFilename = project.dirs.output.absolutePath + LUNR_INDEX_JSON
+		val json = Json(JsonConfiguration(prettyPrint = true))
+		val lunrPosts = mutableListOf<LunrPost>()
 
+		if (!clean) {
+			val lunrString = fileHandler.readFileAsString(outputFilename)
+			val existingLunrPosts = json.parse(LunrPost.serializer().list, lunrString)
+			lunrPosts.addAll(existingLunrPosts)
+			posts.forEach { p ->
+				val foundExisting = lunrPosts.find { lunrPost: LunrPost -> lunrPost.id.equals(p.getLunrId()) }
+				if (foundExisting == null) {
+					lunrPosts.add(p.extractDocument())
+				}
+			}
 
-    }
+		} else {
+			// posts should be enough for us to construct all the LunrPosts we need
+			posts.forEach { p ->
+				lunrPosts.add(p.extractDocument())
+			}
 
-    fun postToJson(post: Post): String {
-        val sb = StringBuilder()
-        val postDoc = post.extractDocument()
-        sb.appendln("{")
-        sb.appendln("\t\"id\": \"${post.url.removePrefix('/'.toString())}\",")
-        sb.appendln("\t\"title\": \"${post.title}\",")
-        sb.appendln("\t\"date\": \"${formatDate(postDoc.postDate)}\",")
-        sb.appendln("\t\"body\": \"${postDoc.body}\",")
-        sb.appendln("\t\"headings\": \"${postDoc.headings?.let { convertListToString(postDoc.headings) }}\"")
-        sb.append("}")
-        return sb.toString()
-    }
-
-    fun convertListToString(list: List<String>): String {
-        val headingsString = StringBuilder()
-        if (list.isNotEmpty()) {
-            list.forEachIndexed { idx, heading ->
-                headingsString.append(heading)
-                if (idx != list.size - 1) {
-                    headingsString.append(",")
-                }
-            }
-        }
-        return headingsString.toString()
-    }
-
-    fun formatDate(date: LocalDate): String {
-        val formatter = DateTimeFormatter.ISO_LOCAL_DATE
-        return formatter.format(date)
-    }
+		}
+		val lunrJson = json.stringify(LunrPost.serializer().list, lunrPosts)
+		fileHandler.writeFile(project.dirs.output, LUNR_INDEX_JSON, lunrJson)
+	}
 }
 
-fun Post.extractDocument(): PostDocument {
-    val jsoupDoc = Jsoup.parse(this.content)
-    // get the codeblocks first
-    val codeBlockList = mutableListOf<String>()
-    jsoupDoc.select("code")?.forEach {
-        codeBlockList.add(it.text())
-    }
-    // then remove them from the document
-    jsoupDoc.select("code").remove()
+fun Post.extractDocument(): LunrPost {
+	val jsoupDoc = Jsoup.parse(this.content)
+	// get the codeblocks first
+	val codeBlockList = mutableListOf<String>()
+	jsoupDoc.select("code")?.forEach {
+		codeBlockList.add(it.text())
+	}
+	// then remove them from the document
+	jsoupDoc.select("code").remove()
 
-    // then get the body from what remains, and the headings
-    val body = jsoupDoc.body()
-    val headingList = mutableListOf<String>()
-    jsoupDoc.select("h2, h3, h4")?.forEach {
-        headingList.add(it.text())
-    }
-    var headings: Array<String> = arrayOf()
+	// then get the body from what remains, and the headings
+	val id = this.getLunrId()
+	val title = this.title
+	val body = jsoupDoc.body()
+	val headingList = mutableListOf<String>()
+	jsoupDoc.select("h2, h3, h4")?.forEach {
+		headingList.add(it.text())
+	}
 
-    return PostDocument(body.text().replace("\"", ""), this.date, headingList, codeBlockList.toTypedArray())
+	return LunrPost(
+		id = id,
+		title = title,
+		body = body.text().replace("\"", ""),
+		date = this.date,
+		headings = headingList.joinToString(),
+		codeBlocks = codeBlockList.toList()
+	)
 }
+
+fun Post.getLunrId(): String = this.url.removePrefix('/'.toString())

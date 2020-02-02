@@ -14,24 +14,29 @@ import javax.xml.transform.sax.SAXResult
 import javax.xml.transform.stream.StreamSource
 
 class SitePDFGenerator(val posts: List<Post>) : GeneratorPipeline {
-    override val TEMPLATE: String
-        get() = "fullPDF.fo"    // TODO get this from the project?
-    val FOLDER_NAME = "pdf" // TODO: move this to project model
+	override val TEMPLATE: String
+		get() = "fullPDF.fo"    // TODO get this from the project?
+	val FOLDER_NAME = "pdf" // TODO: move this to project model
 
 
-    val fopFactory = FopFactory.newInstance(readFileFromResources("/", "fopConf.xconf").toURI())
+	val fopFactory = FopFactory.newInstance(readFileFromResources("/", "fopConf.xconf").toURI())
 
-    override suspend fun process(project: Project, renderer: TemplatePageRenderer, fileHandler: FileHandler) {
+	override suspend fun process(
+		project: Project,
+		renderer: TemplatePageRenderer,
+		fileHandler: FileHandler,
+		clean: Boolean
+	) {
 
-        val pdfFolder = fileHandler.createDirectory(project.dirs.output.absolutePath, FOLDER_NAME)
+		val pdfFolder = fileHandler.createDirectory(project.dirs.output.absolutePath, FOLDER_NAME)
 
-        val outputFilename = pdfFolder.absolutePath + "/${project.name}.pdf"
+		val outputFilename = pdfFolder.absolutePath + "/${project.name}.pdf"
 
-        val model = mutableMapOf<String,Any>()
-        model.putAll(project.model)
-        model.put("posts",posts)
+		val model = mutableMapOf<String, Any>()
+		model.putAll(project.model)
+		model.put("posts", posts)
 
-        println("Generating PDF: " + outputFilename)
+		println("Generating PDF: " + outputFilename)
         FileOutputStream(outputFilename).use { outStream ->
             val fop = fopFactory.newFop(MimeConstants.MIME_PDF, outStream)
 

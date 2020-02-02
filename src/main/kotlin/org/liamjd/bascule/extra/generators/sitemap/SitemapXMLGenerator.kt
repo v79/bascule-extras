@@ -12,7 +12,12 @@ class SitemapXMLGenerator(val posts: List<Post>) : GeneratorPipeline {
     override val TEMPLATE: String
         get() = ""
 
-    override suspend fun process(project: Project, renderer: TemplatePageRenderer, fileHandler: FileHandler) {
+    override suspend fun process(
+        project: Project,
+        renderer: TemplatePageRenderer,
+        fileHandler: FileHandler,
+        clean: Boolean
+    ) {
 
         val outputFilename = "sitemap.xml"
         val model = mutableMapOf<String, Any>()

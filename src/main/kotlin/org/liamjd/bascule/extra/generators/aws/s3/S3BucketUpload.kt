@@ -14,7 +14,12 @@ class S3BucketUpload : GeneratorPipeline {
 	override val TEMPLATE: String
 		get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
-	override suspend fun process(project: Project, renderer: TemplatePageRenderer, fileHandler: FileHandler) {
+	override suspend fun process(
+		project: Project,
+		renderer: TemplatePageRenderer,
+		fileHandler: FileHandler,
+		clean: Boolean
+	) {
 
 		val s3Config = project.configMap["s3"] as Map<String, Any>?
 		val bucket: String
