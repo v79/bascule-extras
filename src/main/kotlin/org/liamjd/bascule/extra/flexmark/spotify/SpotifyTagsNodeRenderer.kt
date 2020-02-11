@@ -33,14 +33,28 @@ class SpotifyTagsNodeRenderer(options: DataHolder) : NodeRenderer {
 	}
 
 	private fun renderExtendedEmbedLink(node: SpotifyLink, context: NodeRendererContext, html: HtmlWriter) {
+
 		val track = if (node.url.startsWith("spotify:track:")) {
 			node.url.removePrefix("spotify:track:")
 		} else {
 			node.url
 		}
+
+		val templateString = readFileFromResources("/org/liamjd/bascule/extra/flexmark/spotify/", "spotify.html")
+		val regexes =
+			mapOf(Regex("\\[title\\]") to node.title, Regex("\\[track\\]") to track, Regex("\\[text\\]") to node.text)
+		var processedString = templateString
+		for (r in regexes) {
+			processedString = processedString.replace(r.key, r.value.toString())
+		}
+
 		html.line()
-		html.indent()
-			.append("<iframe src=\"https://open.spotify.com/embed/track/${track}\" width=\"300\" height=\"80\" frameborder=\"0\" allowtransparency=\"true\" allow=\"encrypted-media\"></iframe>")
+		html.indent().append(processedString)
 		html.line()
 	}
+
+	private fun readFileFromResources(sourceDir: String, fileName: String): String {
+		return javaClass.getResource(sourceDir + fileName).readText()
+	}
+
 }
