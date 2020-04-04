@@ -1,12 +1,11 @@
 package org.liamjd.bascule.flexmark.spotify
 
-import com.vladsch.flexmark.html.CustomNodeRenderer
 import com.vladsch.flexmark.html.HtmlWriter
 import com.vladsch.flexmark.html.renderer.NodeRenderer
 import com.vladsch.flexmark.html.renderer.NodeRendererContext
 import com.vladsch.flexmark.html.renderer.NodeRendererFactory
 import com.vladsch.flexmark.html.renderer.NodeRenderingHandler
-import com.vladsch.flexmark.util.options.DataHolder
+import com.vladsch.flexmark.util.data.DataHolder
 
 class SpotifyTagsNodeRenderer(options: DataHolder) : NodeRenderer {
 
@@ -19,7 +18,13 @@ class SpotifyTagsNodeRenderer(options: DataHolder) : NodeRenderer {
 		set.add(
 			NodeRenderingHandler(
 				SpotifyLink::class.java,
-				CustomNodeRenderer { node, context, html -> self.renderExtendedEmbedLink(node, context, html) })
+				NodeRenderingHandler.CustomNodeRenderer { node, context, html ->
+					self.renderExtendedEmbedLink(
+						node,
+						context,
+						html
+					)
+				})
 		)
 
 		return set
@@ -27,7 +32,7 @@ class SpotifyTagsNodeRenderer(options: DataHolder) : NodeRenderer {
 
 
 	class Factory : NodeRendererFactory {
-		override fun create(options: DataHolder): NodeRenderer {
+		override fun apply(options: DataHolder): NodeRenderer {
 			return SpotifyTagsNodeRenderer(options)
 		}
 	}

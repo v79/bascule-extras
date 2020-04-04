@@ -2,7 +2,7 @@ package org.liamjd.bascule.flexmark.spotify
 
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.options.MutableDataHolder
+import com.vladsch.flexmark.util.data.MutableDataHolder
 
 class SpotifyExtension : Parser.ParserExtension, HtmlRenderer.HtmlRendererExtension {
 
@@ -10,20 +10,20 @@ class SpotifyExtension : Parser.ParserExtension, HtmlRenderer.HtmlRendererExtens
 		parserBuilder?.postProcessorFactory(SpotifyTagsNodePostProcessor.Factory(parserBuilder))
 	}
 
-	override fun extend(rendererBuilder: HtmlRenderer.Builder?, rendererType: String?) {
-		rendererBuilder?.nodeRendererFactory(SpotifyTagsNodeRenderer.Factory())
-	}
-
 	override fun parserOptions(options: MutableDataHolder?) {
-	}
-
-	override fun rendererOptions(options: MutableDataHolder?) {
 	}
 
 	companion object {
 		fun create(): SpotifyExtension {
 			return SpotifyExtension()
 		}
+	}
+
+	override fun rendererOptions(options: MutableDataHolder) {
+	}
+
+	override fun extend(htmlRendererBuilder: HtmlRenderer.Builder, rendererType: String) {
+		htmlRendererBuilder.nodeRendererFactory(SpotifyTagsNodeRenderer.Factory())
 	}
 
 }

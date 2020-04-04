@@ -5,21 +5,22 @@ import com.vladsch.flexmark.ast.Text
 import com.vladsch.flexmark.ext.media.tags.internal.AbstractMediaLink
 import com.vladsch.flexmark.parser.block.NodePostProcessor
 import com.vladsch.flexmark.parser.block.NodePostProcessorFactory
-import com.vladsch.flexmark.util.NodeTracker
 import com.vladsch.flexmark.util.ast.Document
 import com.vladsch.flexmark.util.ast.Node
-import com.vladsch.flexmark.util.options.DataHolder
+import com.vladsch.flexmark.util.ast.NodeTracker
+import com.vladsch.flexmark.util.data.DataHolder
+import com.vladsch.flexmark.util.misc.CharPredicate
 import com.vladsch.flexmark.util.sequence.BasedSequence
 
 class SpotifyTagsNodePostProcessor(options: DataHolder) : NodePostProcessor() {
-	override fun process(state: NodeTracker?, node: Node?) {
+	override fun process(state: NodeTracker, node: Node) {
 		if (node is Link) {
 			val previous = node.previous
 
 			if (previous is Text) {
 				val chars = previous.chars
 				if (chars.isContinuedBy(node.chars)) {
-					var mediaLink: AbstractMediaLink
+					val mediaLink: AbstractMediaLink
 					if (chars.endsWith(SpotifyLink.PREFIX) && !isEscaped(chars, SpotifyLink.PREFIX)) {
 						mediaLink = SpotifyLink(node)
 					} else {
@@ -29,13 +30,13 @@ class SpotifyTagsNodePostProcessor(options: DataHolder) : NodePostProcessor() {
 
 					mediaLink.takeChildren(node)
 					node.unlink()
-					state?.nodeRemoved(node)
+					state.nodeRemoved(node)
 					previous.insertAfter(mediaLink)
-					state?.nodeAddedWithChildren(mediaLink)
+					state.nodeAddedWithChildren(mediaLink)
 					previous.setChars(chars.subSequence(0, chars.length - mediaLink.getPrefix().length))
 					if (previous.getChars().length == 0) {
 						previous.unlink()
-						state?.nodeRemoved(previous)
+						state.nodeRemoved(previous)
 					}
 				}
 			}
@@ -43,7 +44,8 @@ class SpotifyTagsNodePostProcessor(options: DataHolder) : NodePostProcessor() {
 	}
 
 	private fun isEscaped(chars: BasedSequence, prefix: String): Boolean {
-		val backslashCount = chars.subSequence(0, chars.length - prefix.length).countTrailing('\\')
+		val backslash = CharPredicate.anyOf('\\')
+		val backslashCount = chars.subSequence(0, chars.length - prefix.length).countTrailing(backslash)
 		return backslashCount and 1 != 0
 	}
 
@@ -52,7 +54,7 @@ class SpotifyTagsNodePostProcessor(options: DataHolder) : NodePostProcessor() {
 			addNodes(Link::class.java)
 		}
 
-		override fun create(document: Document): NodePostProcessor {
+		override fun apply(document: Document): NodePostProcessor {
 			return SpotifyTagsNodePostProcessor(document)
 		}
 	}
