@@ -1,6 +1,6 @@
 buildscript {
-    ext.kotlin_version = '1.3.61'
-    ext.bascule_lib_version = '0.0.24'
+    ext.kotlin_version = '1.3.72'
+    ext.bascule_lib_version = '0.0.26'
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'org.liamjd.bascule'
-version '0.0.10'
+version '0.0.11'
 
 sourceCompatibility = 1.8
 
