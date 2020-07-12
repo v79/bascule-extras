@@ -1,8 +1,6 @@
 package org.liamjd.bascule.extra.sort
 
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkStatic
+import io.mockk.*
 import org.liamjd.bascule.lib.model.Directories
 import org.liamjd.bascule.lib.model.Post
 import org.liamjd.bascule.lib.model.Project
@@ -27,10 +25,13 @@ internal class ManualSorterTest : Spek({
 
 
 	var posts: List<Post> = mutableListOf(DATA.post1, DATA.post2, DATA.post3, DATA.post4)
+	var extendedPosts: List<Post> =
+		mutableListOf(DATA.post1, DATA.post2, DATA.post3, DATA.post4, DATA.post5, DATA.post6)
 
 
 	every { mDirectories.root } returns mRoot
 	every { mFileHandler.getFile(any(), any()) } returns mOrderFile
+	every { mFileHandler.writeFile(any(), any(), any()) } just Runs
 	every { mOrderFile.exists() } returns true
 
 	mockkStatic("kotlin.io.FilesKt__FileReadWriteKt")
@@ -54,6 +55,25 @@ internal class ManualSorterTest : Spek({
 				}
 			}
 		}
+
+		it("will update the order list when new MD files are found") {
+			// setup
+			ManualSorter.fileHandler = mFileHandler
+
+			// execute
+			val sortedList = ManualSorter.sortAndFilter(mProject, extendedPosts)
+
+			// verify
+			assertEquals(1, sortedList.size)
+			assertEquals(6, sortedList[0].size)
+			sortedList[0].let { listItem ->
+				for (i in listItem.indices) {
+					println("$i: ${DATA.targetorder[i]} -> ${listItem[i].sourceFileName}")
+					assertEquals(DATA.targetorder[i], listItem[i].sourceFileName)
+				}
+			}
+			verify { mFileHandler.writeFile(any(), any(), any()) }
+		}
 	}
 }
 )
@@ -61,7 +81,8 @@ internal class ManualSorterTest : Spek({
 object DATA {
 	val targetorder = arrayOf("APPLE.md", "BANANA.md", "PEAR.md", "APRICOT.md").toList()
 	val mdFileNames = arrayOf("APPLE.md", "PEAR.md", "APRICOT.md", "BANANA.md").toList()
-
+	val mdFileNamesAdditional =
+		arrayOf("APPLE.md", "PEAR.md", "APRICOT.md", "BANANA.md", "WATERMELON.md", "GRAPEFRUIT.md").toList()
 	val post1 = mockk<Post>() {
 		mockk {
 			every { layout } returns "post"
@@ -84,6 +105,18 @@ object DATA {
 		mockk {
 			every { layout } returns "post"
 			every { sourceFileName } returns mdFileNames[3]
+		}
+	}
+	val post5 = mockk<Post>() {
+		mockk {
+			every { layout } returns "post"
+			every { sourceFileName } returns mdFileNamesAdditional[4]
+		}
+	}
+	val post6 = mockk<Post>() {
+		mockk {
+			every { layout } returns "post"
+			every { sourceFileName } returns mdFileNamesAdditional[5]
 		}
 	}
 }
