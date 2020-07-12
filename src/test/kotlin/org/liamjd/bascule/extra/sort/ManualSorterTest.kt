@@ -68,11 +68,11 @@ internal class ManualSorterTest : Spek({
 			assertEquals(6, sortedList[0].size)
 			sortedList[0].let { listItem ->
 				for (i in listItem.indices) {
-					println("$i: ${DATA.targetorder[i]} -> ${listItem[i].sourceFileName}")
-					assertEquals(DATA.targetorder[i], listItem[i].sourceFileName)
+					println("$i: ${DATA.extendedExpectedTargetOrder[i]} -> ${listItem[i].sourceFileName}")
+					assertEquals(DATA.extendedExpectedTargetOrder[i], listItem[i].sourceFileName)
 				}
 			}
-			verify { mFileHandler.writeFile(any(), any(), any()) }
+			verify(exactly = 1) { mFileHandler.writeFile(ofType(), any(), any()) }
 		}
 	}
 }
@@ -83,6 +83,8 @@ object DATA {
 	val mdFileNames = arrayOf("APPLE.md", "PEAR.md", "APRICOT.md", "BANANA.md").toList()
 	val mdFileNamesAdditional =
 		arrayOf("APPLE.md", "PEAR.md", "APRICOT.md", "BANANA.md", "WATERMELON.md", "GRAPEFRUIT.md").toList()
+	val extendedExpectedTargetOrder =
+		arrayOf("APPLE.md", "BANANA.md", "PEAR.md", "APRICOT.md", "WATERMELON.md", "GRAPEFRUIT.md").toList()
 	val post1 = mockk<Post>() {
 		mockk {
 			every { layout } returns "post"

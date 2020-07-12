@@ -21,14 +21,19 @@ object ManualSorter : SortAndFilter {
 		val newList = Array<Post?>(posts.size) { null }
 		val missingFromOrder = mutableListOf<String>()
 
+		var extraPostsPositionCounter =
+			originalManualOrder.size // newList[0..originalManualOrder.size-1] will be filled from manualOrder, leaving newList[originalManualOrderSize..posts.size-1] unoccupied
 		posts.forEach { p ->
 			val foundInOrder = manualOrder.find { s -> s.value == p.sourceFileName }
 			if (foundInOrder != null) {
+				println("Inserting ${foundInOrder.value} at ${foundInOrder.index}")
 				newList[foundInOrder.index] = p
 			} else {
 				println("We have a post ${p.sourceFileName} but I can't find it in the order file. Add it now")
 				missingFromOrder.add(p.sourceFileName)
 				// not found, but I still need to add it to newList. But where?
+				// ideally, at the front of 'newList', but that is not possible here
+				newList[extraPostsPositionCounter++] = p
 			}
 		}
 
@@ -43,7 +48,6 @@ object ManualSorter : SortAndFilter {
 			missingFromOrder.addAll(originalManualOrder)
 			fileHandler.writeFile(project.dirs.root, ORDER_FILE_NAME, missingFromOrder.joinToString("\n"))
 		}
-
 
 		return filteredPosts
 	}
