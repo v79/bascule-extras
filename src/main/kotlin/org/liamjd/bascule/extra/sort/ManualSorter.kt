@@ -10,6 +10,10 @@ object ManualSorter : SortAndFilter {
 	lateinit var fileHandler: SortingFH
 
 	override fun sortAndFilter(project: Project, posts: List<Post>): List<List<Post>> {
+		// really poor man's DI...
+		if (!this::fileHandler.isInitialized) {
+			fileHandler = SortingFileHandler()
+		}
 		val orderFile = fileHandler.getFile(project.dirs.root, ORDER_FILE_NAME)
 		val filteredPosts: List<List<Post>>
 		if (!orderFile.exists()) {

@@ -72,6 +72,22 @@ internal class ManualSorterTest : Spek({
 					assertEquals(DATA.extendedExpectedTargetOrder[i], listItem[i].sourceFileName)
 				}
 			}
+
+			verify(exactly = 1) { mFileHandler.writeFile(ofType(), any(), any()) }
+		}
+
+		it("will not reorder if no order file found, and will create an order file") {
+			// setup
+			every { mOrderFile.exists() } returns false
+			every { mOrderFile.createNewFile() } returns false
+			ManualSorter.fileHandler = mFileHandler
+
+			// execute
+			val sortedList = ManualSorter.sortAndFilter(mProject, posts)
+
+			// verify
+			assertEquals(1, sortedList.size)
+			assertEquals(4, sortedList[0].size)
 			verify(exactly = 1) { mFileHandler.writeFile(ofType(), any(), any()) }
 		}
 	}
