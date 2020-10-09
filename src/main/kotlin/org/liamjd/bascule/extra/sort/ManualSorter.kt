@@ -6,7 +6,7 @@ import org.liamjd.bascule.lib.model.Project
 import java.io.File
 
 object ManualSorter : SortAndFilter {
-	val ORDER_FILE_NAME = "order.txt"
+	private const val ORDER_FILE_NAME = "order.txt"
 	lateinit var fileHandler: SortingFH
 
 	override fun sortAndFilter(project: Project, posts: List<Post>): List<List<Post>> {
@@ -22,25 +22,29 @@ object ManualSorter : SortAndFilter {
 		}
 		val originalManualOrder = orderFile.readLines()
 		val manualOrder = originalManualOrder.toMutableList().withIndex()
-		val newList = Array<Post?>(posts.size) { null }
+		val newList = Array<Post?>(posts.size * 2) { null } // allow for twice as many entries as we currently have
 		val missingFromOrder = mutableListOf<String>()
 
 		var extraPostsPositionCounter =
 			originalManualOrder.size // newList[0..originalManualOrder.size-1] will be filled from manualOrder, leaving newList[originalManualOrderSize..posts.size-1] unoccupied
-		posts.forEach { p ->
-			val foundInOrder = manualOrder.find { s -> s.value == p.sourceFileName }
+		posts.forEach { post ->
+			val postFile = File(post.sourceFileName)
+			val foundInOrder = manualOrder.find { s -> s.value == postFile.name }
 			if (foundInOrder != null) {
 				println("Inserting ${foundInOrder.value} at ${foundInOrder.index}")
-				newList[foundInOrder.index] = p
+				newList[foundInOrder.index] = post
 			} else {
-				println("We have a post ${p.sourceFileName} but I can't find it in the order file. Add it now")
-				missingFromOrder.add(p.sourceFileName)
+				println("We have a post ${postFile.name} but I can't find it in the order file. Add it now")
+				missingFromOrder.add(postFile.name)
 				// not found, but I still need to add it to newList. But where?
 				// ideally, at the front of 'newList', but that is not possible here
-				newList[extraPostsPositionCounter++] = p
+				newList[extraPostsPositionCounter++] = post
 			}
 		}
 
+		// TODO: what to do about things listed in the order file but NOT found on disc?
+
+		println("Sorting posts with given order file")
 		filteredPosts = newList.filterNotNull().toList().asSequence().withIndex()
 			.filter { indexedValue: IndexedValue<Post> -> project.postLayouts.contains(indexedValue.value.layout) }
 			.groupBy { it.index / project.postsPerPage }
