@@ -2,10 +2,8 @@ package org.liamjd.bascule.extra.generators.lunr
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.list
 import org.jsoup.Jsoup
 import org.liamjd.bascule.lib.FileHandler
 import org.liamjd.bascule.lib.generators.GeneratorPipeline
@@ -31,7 +29,6 @@ class LunrJSIndexGenerator(val posts: List<Post>) : GeneratorPipeline {
 
 	private val LUNR_INDEX_JSON = "/lunrindex.json"
 
-	@UnstableDefault
 	override suspend fun process(
 		project: Project,
 		renderer: TemplatePageRenderer,
@@ -39,12 +36,13 @@ class LunrJSIndexGenerator(val posts: List<Post>) : GeneratorPipeline {
 		clean: Boolean
 	) {
 		val outputFilename = project.dirs.output.absolutePath + LUNR_INDEX_JSON
-		val json = Json(JsonConfiguration(prettyPrint = true))
+		val json = Json { prettyPrint = true }
 		val lunrPosts = mutableListOf<LunrPost>()
 
 		if (!clean) {
 			val lunrString = fileHandler.readFileAsString(outputFilename)
-			val existingLunrPosts = json.parse(LunrPost.serializer().list, lunrString)
+			val existingLunrPosts: List<LunrPost> =
+				json.decodeFromString<List<LunrPost>>(deserializer = ListSerializer(LunrPost.serializer()), lunrString)
 			lunrPosts.addAll(existingLunrPosts)
 			posts.forEach { p ->
 				val foundExisting = lunrPosts.find { lunrPost: LunrPost -> lunrPost.id.equals(p.getLunrId()) }
@@ -60,7 +58,7 @@ class LunrJSIndexGenerator(val posts: List<Post>) : GeneratorPipeline {
 			}
 
 		}
-		val lunrJson = json.stringify(LunrPost.serializer().list, lunrPosts)
+		val lunrJson = json.encodeToString(ListSerializer(LunrPost.serializer()), lunrPosts)
 		fileHandler.writeFile(project.dirs.output, LUNR_INDEX_JSON, lunrJson)
 	}
 }

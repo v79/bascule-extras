@@ -1,7 +1,12 @@
 package org.liamjd.bascule.extra.generators.lunr
 
-import kotlinx.serialization.*
-import kotlinx.serialization.internal.StringDescriptor
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -11,7 +16,7 @@ import java.time.format.DateTimeFormatter
 @Serializer(forClass = LocalDate::class)
 object LocalDateSerializer : KSerializer<LocalDate> {
 	override val descriptor: SerialDescriptor =
-		StringDescriptor.withName("date")
+		PrimitiveSerialDescriptor("date", PrimitiveKind.STRING)
 
 	override fun serialize(encoder: Encoder, obj: LocalDate) {
 		encoder.encodeString(obj.format(DateTimeFormatter.ISO_DATE))
