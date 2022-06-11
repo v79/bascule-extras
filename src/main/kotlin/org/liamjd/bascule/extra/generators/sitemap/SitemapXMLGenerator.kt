@@ -37,14 +37,14 @@ class SitemapXMLGenerator(val posts: List<Post>) : GeneratorPipeline {
 """
 		)
 		posts.forEach { post ->
-			xmlBuilder.appendln("\t<url>")
+			xmlBuilder.appendLine("\t<url>")
 			xmlBuilder.append(loc(host, post))
 			xmlBuilder.append(lastmod(post.date)) // TODO: what about the file last modified time?
 			// TODO: changeFreg
 			// TODO: priority
-			xmlBuilder.appendln("\t</url>")
+			xmlBuilder.appendLine("\t</url>")
 		}
-		xmlBuilder.appendln("</urlset>")
+		xmlBuilder.appendLine("</urlset>")
 
 		fileHandler.writeFile(project.dirs.output, outputFilename, xmlBuilder.toString())
 
@@ -55,7 +55,7 @@ class SitemapXMLGenerator(val posts: List<Post>) : GeneratorPipeline {
 		locBuilder.append("\t\t<loc>")
 		locBuilder.append(host)
 		locBuilder.append(post.url.trim())
-		locBuilder.appendln("</loc>")
+		locBuilder.appendLine("</loc>")
 		return locBuilder.toString()
 	}
 
@@ -64,7 +64,7 @@ class SitemapXMLGenerator(val posts: List<Post>) : GeneratorPipeline {
 		val lastmodBUilder = StringBuilder()
 		lastmodBUilder.append("\t\t<lastmod>")
 		lastmodBUilder.append(formatter.format(date))
-		lastmodBUilder.appendln("</lastmod>")
+		lastmodBUilder.appendLine("</lastmod>")
 		return lastmodBUilder.toString()
 	}
 }

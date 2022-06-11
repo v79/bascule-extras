@@ -1,4 +1,4 @@
-package org.liamjd.bascule.flexmark.spotify
+package org.liamjd.bascule.extra.flexmark.spotify
 
 import com.vladsch.flexmark.html.HtmlWriter
 import com.vladsch.flexmark.html.renderer.NodeRenderer

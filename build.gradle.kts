@@ -1,9 +1,10 @@
 group = "org.liamjd.bascule"
 version = "0.0.13"
 
-val bascule_lib_version = "0.0.26"
+val bascule_lib_version = "0.0.28"
 val mockk_version = "1.10.0"
 val spek_version = "2.0.6"
+val flexmark_version = "0.61.0"
 
 plugins {
 	kotlin("jvm") version "1.6.21"
@@ -30,6 +31,8 @@ dependencies {
 	implementation("com.amazonaws:aws-java-sdk-s3:1.11.515")
 	// kotlinx serialization for lunr json
 	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+	// markdown - probably want to be more selective with this!
+	implementation("com.vladsch.flexmark:flexmark-all:$flexmark_version")
 
 	// testing
 	testImplementation("org.jetbrains.kotlin:kotlin-test:1.6.21")

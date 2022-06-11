@@ -1,4 +1,4 @@
-package org.liamjd.bascule.flexmark.spotify
+package org.liamjd.bascule.extra.flexmark.spotify
 
 import com.vladsch.flexmark.ast.Link
 import com.vladsch.flexmark.ext.media.tags.internal.AbstractMediaLink
